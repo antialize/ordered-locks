@@ -1,11 +1,10 @@
 [package]
 name = "ordered-locks"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
-authors = ["Jakob Truelsen <jakob@scalgo.com>",]
-categories = ["locking"]
+authors = ["Jakob Truelsen <jakob@scalgo.com>"]
 description = "Compiletime deadlock avoidance"
-documentation = "https://docs.serde.rs/ordered-locks/"
+documentation = "https://docs.rs/ordered-locks"
 keywords = ["locking"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/antialize/ordered-locks"
