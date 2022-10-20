@@ -1,3 +1,51 @@
+//! This create implement compiletime ordering of locks into levels, [`L1`], [`L2`], [`L3`], [`L4`] and [`L5`].
+//! In order to acquire a lock at level `i` only locks at level `i-1` or below may be held.
+//!
+//! If locks are alwayes acquired in level order on all threads, then one cannot have a deadlock
+//! involving only acquireng locks.
+//!
+//! In the following example we create two [muteces](Mutex) at level [`L1`] and [`L2`] and lock them
+//! in the propper order.
+//! ```
+//! use ordered_locks::{L1, L2, Mutex, CleanLockToken};
+//! // Create value at lock level 0, this lock cannot be acquired while a level1 lock is heldt
+//! let v1 = Mutex::<L1, _>::new(42);
+//! // Create value at lock level 1
+//! let v2 = Mutex::<L2, _>::new(43);
+//! // Construct a token indicating that this thread does not hold any locks
+//! let mut token = unsafe {CleanLockToken::new()};
+//!  
+//! {
+//!     // We can aquire the locks for v1 and v2 at the same time
+//!     let mut g1 = v1.lock(token.token());
+//!     let (g1, token) = g1.token_split();
+//!     let mut g2 = v2.lock(token);
+//!     *g2 = 11;
+//!     *g1 = 12;
+//! }
+//! // Once the guards are dropped we can acquire other things
+//! *v2.lock(token.token()) = 13;
+//! ```
+//!
+//! In the following example we create two [muteces](Mutex) at level [`L1`] and [`L2`] and try to lock
+//! the mutex at [`L1`] while already holding a [`Mutex`] at [`L2`] which failes to compile.
+//! ```compile_fail
+//! use ordered_locks::{L1, L2, Mutex, CleanLockToken};
+//! // Create value at lock level 0, this lock cannot be acquired while a level1 lock is heldt
+//! let v1 = Mutex::<L1, _>::new(42);
+//! // Create value at lock level 1
+//! let v2 = Mutex::<L2, _>::new(43);
+//! // Construct a token indicating that this thread does not hold any locks
+//! let mut clean_token = unsafe {CleanLockToken::new()};
+//! let token = clean_token.token();
+//!  
+//! // Try to aquire locks in the wrong order
+//! let mut g2 = v2.lock(token);
+//! let (g2, token) = g2.token_split();
+//! let mut g1 = v1.lock(token); // shouldn't compile!
+//! *g2 = 11;
+//! *g1 = 12;
+//! ```
 use std::marker::PhantomData;
 
 /// Lock level of a mutex
@@ -344,7 +392,7 @@ impl<'a, L: Level, T> std::ops::Deref for RwLockReadGuard<'a, L, T> {
 /// An asynchronous `Mutex`-like type.
 ///
 /// This type acts similarly to [`std::sync::Mutex`], with two major
-/// differences: [`lock`] is an async method so does not block, and the lock
+/// differences: `lock` is an async method so does not block, and the lock
 /// guard is designed to be held across `.await` points.
 #[cfg(feature = "tokio")]
 #[derive(Debug)]
@@ -444,5 +492,6 @@ impl<'a, L: Level, T: ?Sized + 'a> std::ops::DerefMut for AsyncMutexGuard<'a, L,
     }
 }
 
+/// This function can only be called if no lock is held by the calling thread/task
 #[inline]
 pub fn check_no_locks(_: LockToken<'_, L0>) {}
