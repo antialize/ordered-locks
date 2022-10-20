@@ -2,6 +2,13 @@
 name = "ordered-locks"
 version = "0.1.0"
 edition = "2021"
+authors = ["Jakob Truelsen <jakob@scalgo.com>",]
+categories = ["locking"]
+description = "Compiletime deadlock avoidance"
+documentation = "https://docs.serde.rs/ordered-locks/"
+keywords = ["locking"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/antialize/ordered-locks"
 
 [dependencies]
 tokio = { version = "1.12.0", features = ["sync"], optional=true}

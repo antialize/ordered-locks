@@ -8,8 +8,6 @@ A rust libary for assigning levels to locks at compiletime in order to avoid dea
 [![Docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://docs.rs/ordered-locks)
 
 ```rust
-use ordered_locks::{CleanLockToken, Mutex, L0, L1};
-
 use ordered_locks::{L1, L2, Mutex, CleanLockToken};
 // Create value at lock level 0, this lock cannot be acquired while a level1 lock is heldt
 let v1 = Mutex::<L1, _>::new(42);
