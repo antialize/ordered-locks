@@ -231,6 +231,25 @@ impl<L: Level, T> Mutex<L, T> {
         }
     }
 
+    /// Attempts to acquire this lock. Timeout after duration has expired
+    ///
+    /// Since this operation is not supported by a std::sync::mutex this
+    /// this is implemented using try_lock and waits
+    pub fn try_lock_for<'a, LP: Lower<L> + 'a>(
+        &'a self,
+        lock_token: LockToken<'a, LP>,
+        duration: std::time::Duration,
+    ) -> Option<MutexGuard<'a, L, T>> {
+        let try_counts = 16;
+        for _ in 0..try_counts {
+            if let Some(lock) = self.try_lock(LockToken::<LP>(Default::default())) {
+                return Some(lock);
+            }
+            std::thread::sleep(duration / try_counts)
+        }
+        self.try_lock(lock_token)
+    }
+
     /// Consumes this Mutex, returning the underlying data.
     pub fn into_inner(self) -> T {
         self.inner.into_inner().unwrap()

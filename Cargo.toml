@@ -1,6 +1,6 @@
 [package]
 name = "ordered-locks"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["Jakob Truelsen <jakob@scalgo.com>"]
 description = "Compiletime deadlock avoidance"
