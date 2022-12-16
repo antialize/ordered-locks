@@ -312,11 +312,11 @@ impl<L: Level, T> RwLock<L, T> {
     pub fn write<'a, LP: Lower<L> + 'a>(
         &'a self,
         lock_token: LockToken<'a, LP>,
-    ) -> std::sync::LockResult<RwLockWriteGuard<'a, L, T>> {
-        Ok(RwLockWriteGuard {
+    ) -> RwLockWriteGuard<'a, L, T> {
+        RwLockWriteGuard {
             inner: self.inner.write().unwrap(),
             lock_token: LockToken::downgraded(lock_token),
-        })
+        }
     }
 
     /// Locks this RwLock with shared read access, blocking the current thread until it can be acquired.
